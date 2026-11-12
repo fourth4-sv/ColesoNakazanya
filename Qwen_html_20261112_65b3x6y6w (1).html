@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Колесо Наказаний 🎡</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+  
+  body {
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+  
+  .container {
+    width: 420px;
+    background: #F5F5F5;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 
+      0 20px 60px rgba(0, 217, 255, 0.4),
+      0 0 0 1px rgba(255, 107, 157, 0.3),
+      inset 0 1px 0 rgba(255,255,255,0.5);
+    position: relative;
+  }
+  
+  .header {
+    background: linear-gradient(135deg, #00D9FF 0%, #FF6B9D 100%);
+    padding: 22px 20px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+    animation: shine 4s linear infinite;
+  }
+  
+  @keyframes shine {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .header p {
+    font-size: 13px;
+    opacity: 0.95;
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid #eee;
+  }
+  
+  .tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: #888;
+    transition: all 0.3s;
+    font-size: 14px;
+    border-bottom: 3px solid transparent;
+  }
+  
+  .tab.active {
+    color: #00D9FF;
+    border-bottom-color: #FF6B9D;
+    text-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+  }
+  
+  .content {
+    padding: 20px;
+    min-height: 500px;
+  }
+  
+  .screen { display: none; }
+  .screen.active { display: block; }
+  
+  /* Колесо */
+  .wheel-wrapper {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 10px auto 20px;
+  }
+  
+  .pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid #FF6B9D;
+    z-index: 10;
+    filter: drop-shadow(0 0 8px rgba(255, 107, 157, 0.8));
+  }
+  
+  .wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 6px solid #2C3E50;
+    box-shadow: 
+      0 0 40px rgba(0, 217, 255, 0.6),
+      0 0 80px rgba(255, 107, 157, 0.3),
+      inset 0 0 20px rgba(0,0,0,0.2);
+    transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #FF6B9D, #00D9FF);
+    border-radius: 50%;
+    border: 4px solid #2C3E50;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 
+      0 0 20px rgba(255, 107, 157, 0.8),
+      0 0 40px rgba(0, 217, 255, 0.4);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 157, 0.8), 0 0 40px rgba(0, 217, 255, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(255, 107, 157, 1), 0 0 60px rgba(0, 217, 255, 0.6); }
+  }
+  
+  .spin-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #FF6B9D, #00D9FF);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 
+      0 6px 20px rgba(255, 107, 157, 0.5),
+      0 0 30px rgba(0, 217, 255, 0.3);
+    transition: transform 0.2s;
+  }
+  
+  .spin-btn:hover:not(:disabled) { 
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 157, 0.6), 0 0 40px rgba(0, 217, 255, 0.4);
+  }
+  .spin-btn:active:not(:disabled) { transform: translateY(0); }
+  .spin-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  
+  .legend {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #2C3E50;
+    font-weight: 600;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+  }
+  
+  /* Настройки */
+  .category {
+    margin-bottom: 18px;
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid transparent;
+  }
+  
+  .category[data-cat="easy"] { border-left-color: #4ECDC4; }
+  .category[data-cat="medium"] { border-left-color: #FFD93D; }
+  .category[data-cat="hard"] { border-left-color: #FF6B9D; }
+  
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .category-title {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2C3E50;
+  }
+  
+  .add-btn {
+    background: linear-gradient(135deg, #00D9FF, #FF6B9D);
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(0, 217, 255, 0.4);
+  }
+  
+  .punishment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: #F5F5F5;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #2C3E50;
+    font-weight: 500;
+  }
+  
+  .punishment-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .cruelty-badge {
+    font-size: 16px;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+  
+  .delete-btn {
+    background: #FF6B9D;
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+  
+  /* История */
+  .history-item {
+    background: white;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border-left: 4px solid #00D9FF;
+    font-size: 13px;
+    color: #2C3E50;
+  }
+  
+  .history-item .time {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+  }
+  
+  .history-item.easy { border-left-color: #4ECDC4; }
+  .history-item.medium { border-left-color: #FFD93D; }
+  .history-item.hard { border-left-color: #FF6B9D; }
+  
+  .empty {
+    text-align: center;
+    color: #aaa;
+    padding: 40px 20px;
+    font-size: 14px;
+  }
+  
+  /* Модалка результата */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+  }
+  
+  .modal.show { display: flex; }
+  
+  .modal-content {
+    background: white;
+    padding: 30px 24px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 320px;
+    animation: pop 0.4s ease;
+    box-shadow: 
+      0 20px 60px rgba(0,0,0,0.5),
+      0 0 40px rgba(0, 217, 255, 0.3);
+  }
+  
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  
+  .modal-emoji { font-size: 60px; margin-bottom: 10px; }
+  .modal-title { 
+    font-size: 13px; 
+    color: #888; 
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .modal-cruelty {
+    font-size: 14px;
+    color: #FF6B9D;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    background: #FFF0F5;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  .modal-punishment {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C3E50;
+    margin-bottom: 16px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .modal-close {
+    background: linear-gradient(135deg, #FF6B9D, #00D9FF);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+  }
+  
+  .clear-history {
+    background: none;
+    border: 1px solid #ddd;
+    color: #888;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-bottom: 14px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🎡 Колесо Наказаний</h1>
+    <p>Крути колесо — получай наказание!</p>
+  </div>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="wheel">🎯 Колесо</div>
+    <div class="tab" data-tab="settings">⚙️ Настройки</div>
+    <div class="tab" data-tab="history">📜 История</div>
+  </div>
+  
+  <div class="content">
+    <!-- Экран колеса -->
+    <div class="screen active" id="screen-wheel">
+      <div class="wheel-wrapper">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel"></div>
+        <div class="wheel-center">🎲</div>
+      </div>
+      <button class="spin-btn" id="spinBtn">🎲 Крутить!</button>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4ECDC4;color:#4ECDC4"></div>😇 Лёгкие</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFD93D;color:#FFD93D"></div>😈 Средние</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF6B9D;color:#FF6B9D"></div>💀 Тяжёлые</div>
+      </div>
+    </div>
+    
+    <!-- Экран настроек -->
+    <div class="screen" id="screen-settings">
+      <div class="category" data-cat="easy">
+        <div class="category-header">
+          <div class="category-title"><span class="cruelty-badge">😇</span> Лёгкие</div>
+          <button class="add-btn" onclick="addPunishment('easy')">+</button>
+        </div>
+        <div class="list" id="list-easy"></div>
+      </div>
+      
+      <div class="category" data-cat="medium">
+        <div class="category-header">
+          <div class="category-title"><span class="cruelty-badge">😈</span> Средние</div>
+          <button class="add-btn" onclick="addPunishment('medium')">+</button>
+        </div>
+        <div class="list" id="list-medium"></div>
+      </div>
+      
+      <div class="category" data-cat="hard">
+        <div class="category-header">
+          <div class="category-title"><span class="cruelty-badge">💀</span> Тяжёлые</div>
+          <button class="add-btn" onclick="addPunishment('hard')">+</button>
+        </div>
+        <div class="list" id="list-hard"></div>
+      </div>
+    </div>
+    
+    <!-- Экран истории -->
+    <div class="screen" id="screen-history">
+      <button class="clear-history" onclick="clearHistory()">🗑️ Очистить историю</button>
+      <div id="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка результата -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-emoji" id="modalEmoji">😈</div>
+    <div class="modal-title">Тебе выпало:</div>
+    <div class="modal-cruelty" id="modalCruelty">Уровень жестокости</div>
+    <div class="modal-punishment" id="modalPunishment"></div>
+    <button class="modal-close" onclick="closeModal()">Принято!</button>
+  </div>
+</div>
+
+<script>
+  // === Значки жестокости по категориям ===
+  const CRUELTY = {
+    easy:   { emoji: '😇', label: 'Лёгкая жестокость',  color: '#4ECDC4' },
+    medium: { emoji: '😈', label: 'Средняя жестокость', color: '#FFD93D' },
+    hard:   { emoji: '💀', label: 'Высшая жестокость',  color: '#FF6B9D' }
+  };
+  
+  // === Данные по умолчанию ===
+  const DEFAULT_PUNISHMENTS = {
+    easy: ['10 приседаний', 'Комплимент другу', 'Спеть куплет', '5 рожиц в камеру', '15 прыжков на месте'],
+    medium: ['20 отжиманий', 'Уборка в комнате', 'Час без телефона', '10 раз "Я исправлюсь"', '5 страниц книги'],
+    hard: ['Генеральная уборка', '2 дня без сладкого', '30 минут планки', 'Сочинение 100 слов', 'Ранний подъём в выходной']
+  };
+  
+  // === Загрузка данных ===
+  let punishments = JSON.parse(localStorage.getItem('punishments')) || DEFAULT_PUNISHMENTS;
+  let history = JSON.parse(localStorage.getItem('history')) || [];
+  
+  // === Перемешанный массив для колеса ===
+  let wheelItems = [];
+  
+  function save() {
+    localStorage.setItem('punishments', JSON.stringify(punishments));
+    localStorage.setItem('history', JSON.stringify(history));
+  }
+  
+  // === Функция перемешивания (Fisher-Yates) ===
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  
+  // === Создание перемешанного массива ===
+  function buildWheelItems() {
+    const all = [
+      ...punishments.easy.map(p => ({text: p, cat: 'easy'})),
+      ...punishments.medium.map(p => ({text: p, cat: 'medium'})),
+      ...punishments.hard.map(p => ({text: p, cat: 'hard'}))
+    ];
+    wheelItems = shuffle(all);
+  }
+  
+  // === Рендеринг колеса ===
+  function renderWheel() {
+    buildWheelItems();
+    
+    const wheel = document.getElementById('wheel');
+    
+    if (wheelItems.length === 0) {
+      wheel.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;padding:20px;text-align:center">Добавь наказания в настройках!</div>';
+      return;
+    }
+    
+    const total = wheelItems.length;
+    const angleStep = 360 / total;
+    
+    let svg = `<svg viewBox="-100 -100 200 200" style="width:100%;height:100%">`;
+    
+    wheelItems.forEach((item, i) => {
+      const startAngle = i * angleStep - 90;
+      const endAngle = startAngle + angleStep;
+      const startRad = (startAngle * Math.PI) / 180;
+      const endRad = (endAngle * Math.PI) / 180;
+      
+      const x1 = Math.cos(startRad) * 100;
+      const y1 = Math.sin(startRad) * 100;
+      const x2 = Math.cos(endRad) * 100;
+      const y2 = Math.sin(endRad) * 100;
+      
+      const largeArc = angleStep > 180 ? 1 : 0;
+      
+      const path = `M 0 0 L ${x1} ${y1} A 100 100 0 ${largeArc} 1 ${x2} ${y2} Z`;
+      
+      svg += `<path d="${path}" fill="${CRUELTY[item.cat].color}" stroke="#2C3E50" stroke-width="0.5"/>`;
+      
+      // Текст + значок жестокости
+      const midAngle = startAngle + angleStep / 2;
+      const midRad = (midAngle * Math.PI) / 180;
+      const textX = Math.cos(midRad) * 65;
+      const textY = Math.sin(midRad) * 65;
+      const rotation = midAngle + 90;
+      
+      const shortText = item.text.length > 10 ? item.text.slice(0, 9) + '…' : item.text;
+      const badge = CRUELTY[item.cat].emoji;
+      
+      svg += `<text x="${textX}" y="${textY - 4}" fill="#2C3E50" font-size="8" font-weight="bold" text-anchor="middle" dominant-baseline="middle" transform="rotate(${rotation} ${textX} ${textY})">${badge}</text>`;
+      svg += `<text x="${textX}" y="${textY + 5}" fill="#2C3E50" font-size="5" font-weight="bold" text-anchor="middle" dominant-baseline="middle" transform="rotate(${rotation} ${textX} ${textY})">${shortText}</text>`;
+    });
+    
+    svg += `</svg>`;
+    wheel.innerHTML = svg;
+  }
+  
+  // === Рендеринг настроек ===
+  function renderSettings() {
+    ['easy', 'medium', 'hard'].forEach(cat => {
+      const list = document.getElementById(`list-${cat}`);
+      if (punishments[cat].length === 0) {
+        list.innerHTML = '<div class="empty" style="padding:10px">Пусто</div>';
+        return;
+      }
+      list.innerHTML = punishments[cat].map((p, i) => `
+        <div class="punishment-item">
+          <div class="punishment-text">
+            <span class="cruelty-badge">${CRUELTY[cat].emoji}</span>
+            <span>${p}</span>
+          </div>
+          <button class="delete-btn" onclick="deletePunishment('${cat}', ${i})">×</button>
+        </div>
+      `).join('');
+    });
+  }
+  
+  // === Рендеринг истории ===
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (history.length === 0) {
+      list.innerHTML = '<div class="empty">История пуста. Крути колесо!</div>';
+      return;
+    }
+    list.innerHTML = history.slice().reverse().map(h => `
+      <div class="history-item ${h.cat}">
+        <div>${CRUELTY[h.cat].emoji} <b>${h.text}</b></div>
+        <div class="time">${h.time} • ${CRUELTY[h.cat].label}</div>
+      </div>
+    `).join('');
+  }
+  
+  // === Добавление наказания ===
+  function addPunishment(cat) {
+    const text = prompt(`Новое наказание (${CRUELTY[cat].label}):`);
+    if (text && text.trim()) {
+      punishments[cat].push(text.trim());
+      save();
+      renderSettings();
+      renderWheel();
+    }
+  }
+  
+  function deletePunishment(cat, idx) {
+    punishments[cat].splice(idx, 1);
+    save();
+    renderSettings();
+    renderWheel();
+  }
+  
+  function clearHistory() {
+    if (confirm('Очистить всю историю?')) {
+      history = [];
+      save();
+      renderHistory();
+    }
+  }
+  
+  // === Вращение колеса ===
+  let isSpinning = false;
+  let currentRotation = 0;
+  
+  document.getElementById('spinBtn').addEventListener('click', () => {
+    if (isSpinning) return;
+    
+    if (wheelItems.length === 0) {
+      alert('Добавь наказания в настройках!');
+      return;
+    }
+    
+    isSpinning = true;
+    document.getElementById('spinBtn').disabled = true;
+    
+    const total = wheelItems.length;
+    const angleStep = 360 / total;
+    const winnerIdx = Math.floor(Math.random() * total);
+    
+    const targetAngle = 360 - (winnerIdx * angleStep + angleStep / 2);
+    const extraSpins = 5 + Math.floor(Math.random() * 3);
+    const finalRotation = currentRotation + extraSpins * 360 + (targetAngle - (currentRotation % 360));
+    
+    const wheel = document.getElementById('wheel');
+    wheel.style.transform = `rotate(${finalRotation}deg)`;
+    currentRotation = finalRotation;
+    
+    setTimeout(() => {
+      const winner = wheelItems[winnerIdx];
+      showResult(winner);
+      isSpinning = false;
+      document.getElementById('spinBtn').disabled = false;
+    }, 5100);
+  });
+  
+  function showResult(winner) {
+    const cruelty = CRUELTY[winner.cat];
+    document.getElementById('modalEmoji').textContent = cruelty.emoji;
+    document.getElementById('modalCruelty').textContent = cruelty.label;
+    document.getElementById('modalCruelty').style.color = cruelty.color;
+    document.getElementById('modalCruelty').style.background = cruelty.color + '20';
+    document.getElementById('modalPunishment').innerHTML = `<span>${cruelty.emoji}</span> ${winner.text}`;
+    document.getElementById('modal').classList.add('show');
+    
+    const now = new Date();
+    const time = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    history.push({ ...winner, time });
+    save();
+    renderHistory();
+  }
+  
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+  }
+  
+  // === Переключение вкладок ===
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`screen-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+  
+  // === Инициализация ===
+  renderWheel();
+  renderSettings();
+  renderHistory();
+</script>
+
+</body>
+</html>
